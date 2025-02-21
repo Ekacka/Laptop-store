@@ -91,11 +91,9 @@ app.post("/users/login", async (req, res) => {
             return res.status(401).json({ error: "User not found" });
         }
 
-        console.log("🔍 Введенный пароль:", password);
-        console.log("🔍 Хеш из БД:", user.password);
+
 
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log("✅ Результат сравнения:", isMatch);
 
         if (!isMatch) {
             return res.status(401).json({ error: "Incorrect password" });
@@ -108,7 +106,6 @@ app.post("/users/login", async (req, res) => {
         const token = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         res.cookie("token", token, { httpOnly: true, secure: false });
-        console.log("✅ Токен создан:", token);
 
         return res.json({ 
             token, 
