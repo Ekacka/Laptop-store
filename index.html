@@ -11,9 +11,7 @@
         <h1>Laptop Store</h1>
 
         <!-- Cart Button -->
-        <button class="cart-btn btn-secondary" onclick="window.location.href='cart.html'">
-            🛒 Your Cart <span id="cart-count" class="cart-count">0</span>
-        </button>
+
 
         <!-- Authentication -->
         <div id="auth">
@@ -26,7 +24,9 @@
         <!-- Laptop Section -->
         <div id="laptop-section" style="display: none;">
             <h2>Available Laptops</h2>
-
+            <button class="cart-btn btn-secondary" onclick="window.location.href='cart.html'">
+                🛒 Your Cart <span id="cart-count" class="cart-count">0</span>
+            </button>
             <!-- Filters -->
             <div class="filter-section">
                 <select id="brandFilter" onchange="applyFilters()">

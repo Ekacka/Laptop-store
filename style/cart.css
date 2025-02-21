@@ -1,66 +1,74 @@
+/* Общие стили */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-    text-align: center;
+    background-color: #1e1e2f;
+    color: #ffffff;
     margin: 0;
     padding: 20px;
+    text-align: center;
 }
 
-h2 {
-    color: #444;
-}
-
+/* Контейнер корзины */
 #cart-items {
-    max-width: 600px;
-    margin: 20px auto;
-    background: #fff;
-    padding: 15px;
+    max-width: 800px;
+    margin: auto;
+    background: #28283d;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
 
-.cart-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+/* Заголовки */
+h2 {
+    color: #ffcc00;
 }
 
-.cart-item:last-child {
-    border-bottom: none;
-}
-
-.cart-item span {
-    font-size: 16px;
-}
-
+/* Кнопки */
 button {
     background-color: #ff5722;
     color: white;
     border: none;
-    padding: 10px 15px;
+    padding: 12px 18px;
     margin: 10px;
     cursor: pointer;
     border-radius: 5px;
     font-size: 16px;
+    transition: 0.3s;
 }
 
 button:hover {
     background-color: #e64a19;
 }
-
-#total-price {
-    font-size: 18px;
-    font-weight: bold;
-    margin-top: 20px;
-}
-
+/* Centering the button */
 #place-order {
     background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    margin: 10px auto; /* Auto centers the button horizontally */
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: 0.3s;
+    display: block; /* Makes it take full width for centering */
+    text-align: center;
 }
 
 #place-order:hover {
     background-color: #388e3c;
+}
+
+/* Общая стоимость */
+#total-price {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 20px;
+    color: #ffcc00;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    #cart-items {
+        width: 90%;
+    }
 }
