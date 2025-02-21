@@ -6,15 +6,20 @@ const router = express.Router();
 
 router.post("/orders", auth, async (req, res, next) => {
     try {
-        const { laptops, total } = req.body;
+        const { username, laptops, total } = req.body;
 
-        if (!req.userId || !laptops.length) {
+        if (!username || !laptops.length) {
             return res.status(400).json({ error: "Invalid order data." });
         }
 
-        const newOrder = new Order({ userId: req.userId, laptops, total });
-        await newOrder.save();
+        // Создать новый заказ только с username
+        const newOrder = new Order({ 
+            username,
+            laptops, 
+            total 
+        });
 
+        await newOrder.save();
         return res.json({ message: "Order placed successfully!" });
     } catch (error) {
         next(error);

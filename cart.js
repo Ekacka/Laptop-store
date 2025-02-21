@@ -1,23 +1,26 @@
 function addToCart(model, price) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-    let item = { name: model, price: price };
-    cart.push(item);
+    cart.push({ name: model, price: price });
 
     localStorage.setItem("cart", JSON.stringify(cart));
     alert(`${model} added to cart!`);
+
+    updateCartUI();
 }
 
 // Ensure DOM is loaded before modifying UI
 document.addEventListener("DOMContentLoaded", function () {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartContainer = document.querySelector("#cart-items");
+    const totalPriceEl = document.querySelector("#total-price");
+    const orderBtn = document.querySelector("#place-order");
+
+    function getCart() {
+        return JSON.parse(localStorage.getItem("cart")) || [];
+    }
 
     function updateCartUI() {
-        const cartContainer = document.getElementById("cart-items");
-        const totalPriceEl = document.getElementById("total-price");
-        const orderBtn = document.getElementById("place-order");
-
-        if (!cartContainer) return;
+        const cart = getCart();
+        if (!cartContainer || !totalPriceEl || !orderBtn) return;
 
         cartContainer.innerHTML = "";
         let total = 0;
@@ -26,62 +29,67 @@ document.addEventListener("DOMContentLoaded", function () {
             total += item.price;
             cartContainer.innerHTML += `
                 <div class="cart-item">
-                    <p>${item.name} - $${item.price}</p>
+                    <p>${item.name} - $${item.price.toFixed(2)}</p>
                     <button class="remove" data-index="${index}">Remove</button>
                 </div>
             `;
         });
 
-        totalPriceEl.textContent = `Total: $${total}`;
-
-        if (cart.length > 0) {
-            orderBtn.style.display = "block"; // Show "Place Order" button
-        } else {
-            orderBtn.style.display = "none";
-        }
-
-        localStorage.setItem("cart", JSON.stringify(cart));
+        totalPriceEl.textContent = `Total: $${total.toFixed(2)}`;
+        orderBtn.style.display = cart.length > 0 ? "block" : "none";
     }
 
-    document.getElementById("cart-items")?.addEventListener("click", function (e) {
+    cartContainer?.addEventListener("click", function (e) {
         if (e.target.classList.contains("remove")) {
+            let cart = getCart();
             const index = e.target.getAttribute("data-index");
             cart.splice(index, 1);
+
             localStorage.setItem("cart", JSON.stringify(cart));
             updateCartUI();
         }
     });
 
-    document.getElementById("place-order")?.addEventListener("click", async function () {
-        let userId = localStorage.getItem("userId"); 
-        if (!userId) {
+    // ✅ Исправленный обработчик "Place Order"
+    orderBtn?.addEventListener("click", async function () {
+        const cart = getCart();
+        const username = localStorage.getItem("username"); 
+        
+        console.log("Username from localStorage:", username); // <--- Отладка
+
+        if (!username) {
             alert("Please log in first.");
             return;
         }
 
-        let orderData = {
-            userId: userId,
-            laptops: cart,
-            total: cart.reduce((sum, item) => sum + item.price, 0),
-        };
+        if (cart.length === 0) {
+            alert("Your cart is empty!");
+            return;
+        }
 
         try {
-            const res = await fetch("/orders", {
+            const res = await fetch("http://localhost:3030/api/orders", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(orderData),
+                credentials: "include",
+                body: JSON.stringify({
+                    username: username,  // ✅ Используем username вместо userId
+                    laptops: cart,
+                    total: cart.reduce((sum, item) => sum + item.price, 0),
+                }),
             });
 
             const data = await res.json();
             if (res.ok) {
                 alert("Order placed successfully!");
                 localStorage.removeItem("cart");
-                location.reload();
+                updateCartUI();
             } else {
-                alert("Order failed: " + data.error);
+                alert("Order failed: " + (data.error || "Unknown error"));
             }
         } catch (error) {
             console.error("Order error:", error);
+            alert("Something went wrong. Please try again.");
         }
     });
 
