@@ -118,14 +118,23 @@ app.post("/users/login", async (req, res) => {
 });
 
 // Get Laptops
+// Get Laptops with Search Capability
 app.get("/api/laptops", async (req, res, next) => {
     try {
-        const laptops = await Laptop.find();
+        const { search } = req.query;
+        let query = {};
+
+        if (search) {
+            query.model = { $regex: search, $options: "i" }; // Case-insensitive search on model name
+        }
+
+        const laptops = await Laptop.find(query);
         return res.json(laptops);
     } catch (error) {
         next(error);
     }
 });
+
 
 // Global Error Handler
 app.use((err, req, res, next) => {

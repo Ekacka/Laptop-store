@@ -10,9 +10,6 @@
     <div class="container">
         <h1>Laptop Store</h1>
 
-        <!-- Cart Button -->
-
-
         <!-- Authentication -->
         <div id="auth">
             <input type="text" id="username" placeholder="Username">
@@ -27,6 +24,8 @@
             <button class="cart-btn btn-secondary" onclick="window.location.href='cart.html'">
                 🛒 Your Cart <span id="cart-count" class="cart-count">0</span>
             </button>
+            <input type="text" id="searchModel" placeholder="Search by Model..." oninput="loadLaptops()">
+
             <!-- Filters -->
             <div class="filter-section">
                 <select id="brandFilter" onchange="applyFilters()">

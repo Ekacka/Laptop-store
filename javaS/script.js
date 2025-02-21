@@ -58,12 +58,20 @@ async function login() {
 }
 
 async function loadLaptops() {
-    const res = await fetch("http://localhost:3030/api/laptops");
+    const searchQuery = document.getElementById("searchModel").value.trim();
+    let url = "http://localhost:3030/api/laptops";
+
+    if (searchQuery) {
+        url += `?search=${encodeURIComponent(searchQuery)}`;
+    }
+
+    const res = await fetch(url);
     laptopsData = await res.json();
 
     populateFilters();
     displayLaptops(laptopsData);
 }
+
 
 function displayLaptops(laptops) {
     const laptopsDiv = document.getElementById("laptops");
