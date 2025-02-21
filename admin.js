@@ -2,6 +2,7 @@ const express = require("express");
 const session = require("express-session");
 const path = require("path");
 const Laptop = require("./models/Laptop");
+const Order = require("./models/order");
 
 const router = express.Router();
 
@@ -99,5 +100,22 @@ router.post("/delete/:id", requireAdmin, async (req, res) => {
         res.status(500).json({ error: "Error deleting laptop" });
     }
 });
+router.get("/best-selling", async (req, res) => {
+    try {
+        const bestSelling = await Order.aggregate([
+            { $unwind: "$laptops" },
+            { $group: { _id: "$laptops.name", totalSold: { $sum: 1 } } },
+            { $sort: { totalSold: -1 } },
+            { $limit: 10 },
+            { $project: { _id: 0, laptop: "$_id", totalSold: 1 } }
+        ]);
+
+        res.json(bestSelling);
+    } catch (error) {
+        console.error("Error fetching best-selling laptops:", error);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 module.exports = router;
