@@ -73,6 +73,7 @@ async function loadLaptops() {
 }
 
 
+
 function displayLaptops(laptops) {
     const laptopsDiv = document.getElementById("laptops");
     laptopsDiv.innerHTML = "";
@@ -86,9 +87,14 @@ function displayLaptops(laptops) {
         laptopsDiv.innerHTML += `
             <div class="laptop-card">
                 <h3>${laptop.brand} ${laptop.model}</h3>
+
                 <p><b>Price:</b> $${laptop.price}</p>
+
                 <p><b>Processor:</b> ${laptop.processor}</p>
                 <p><b>RAM:</b> ${laptop.ram}</p>
+                <p><b>Storage:</b> ${laptop.storage}</p>
+                <p><b>graphics:</b> ${laptop.graphics}</p>
+
                 <button class="btn btn-primary" onclick="addToCart('${laptop.model}', ${laptop.price})">Add to Cart</button>
             </div>
         `;

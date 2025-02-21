@@ -119,13 +119,20 @@ app.post("/users/login", async (req, res) => {
 
 // Get Laptops
 // Get Laptops with Search Capability
+// Get Laptops with Enhanced Search
 app.get("/api/laptops", async (req, res, next) => {
     try {
         const { search } = req.query;
         let query = {};
 
         if (search) {
-            query.model = { $regex: search, $options: "i" }; // Case-insensitive search on model name
+            query.$or = [
+                { brand: { $regex: search, $options: "i" } },      // Search by brand
+                { model: { $regex: search, $options: "i" } },      // Search by model
+                { processor: { $regex: search, $options: "i" } },  // Search by processor
+                { storage: { $regex: search, $options: "i" } },    // Search by storage
+                { graphics: { $regex: search, $options: "i" } }    // Search by graphics
+            ];
         }
 
         const laptops = await Laptop.find(query);
