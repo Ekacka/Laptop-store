@@ -1,4 +1,5 @@
-let laptopsData = []; // Store fetched laptops
+let laptopsData = []; 
+let token = "";
 
 async function register() {
     const username = document.getElementById("username").value.trim();
@@ -9,14 +10,20 @@ async function register() {
         return;
     }
 
-    const res = await fetch("/users/register", {
+    const res = await fetch("http://localhost:3030/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
     });
 
     const data = await res.json();
-    alert(data.message || data.error);
+
+    if (res.ok) {
+        alert(data.message || "Registration successful! Logging in...");
+        login(); 
+    } else {
+        alert("Registration failed: " + data.error);
+    }
 }
 
 async function login() {
@@ -32,14 +39,14 @@ async function login() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
     });
 
     const data = await res.json();
 
     if (res.ok) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("username", username);
+        localStorage.setItem("username", username);  
 
         document.getElementById("auth").style.display = "none";
         document.getElementById("laptop-section").style.display = "block";
@@ -84,6 +91,7 @@ function addToCart(model, price) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     cart.push({ name: model, price: price });
     localStorage.setItem("cart", JSON.stringify(cart));
+
     updateCartCount();
 }
 
@@ -131,6 +139,7 @@ function populateFilters() {
 
 document.addEventListener("DOMContentLoaded", () => {
     updateCartCount();
+
     if (localStorage.getItem("token")) {
         document.getElementById("auth").style.display = "none";
         document.getElementById("laptop-section").style.display = "block";

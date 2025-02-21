@@ -48,7 +48,7 @@ app.get("/admin", (req, res) => {
 });
 
 // User Registration
-app.post("/users/register", async (req, res, next) => {
+app.post("/users/register", async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -62,39 +62,60 @@ app.post("/users/register", async (req, res, next) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        console.log("🔍 Обычный пароль:", password);
+        console.log("🔍 Хешированный пароль:", hashedPassword);
+
         const newUser = new User({ username, password: hashedPassword });
+        console.log("✅ Сохранение в БД:", newUser);
         await newUser.save();
 
         return res.json({ message: "User registered successfully!" });
     } catch (error) {
-        next(error);
+        console.error("❌ Ошибка регистрации:", error);
+        res.status(500).json({ error: "Server error" });
     }
 });
 
-// User Login
+// Логин
 app.post("/users/login", async (req, res) => {
     try {
         const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ error: "Username and password are required" });
+        }
+
         const user = await User.findOne({ username });
 
         if (!user) {
             return res.status(401).json({ error: "User not found" });
         }
 
+        console.log("🔍 Введенный пароль:", password);
+        console.log("🔍 Хеш из БД:", user.password);
+
         const isMatch = await bcrypt.compare(password, user.password);
+        console.log("✅ Результат сравнения:", isMatch);
+
         if (!isMatch) {
             return res.status(401).json({ error: "Incorrect password" });
+        }
+
+        if (!process.env.JWT_SECRET) {
+            return res.status(500).json({ error: "JWT_SECRET is not set in environment variables" });
         }
 
         const token = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         res.cookie("token", token, { httpOnly: true, secure: false });
+        console.log("✅ Токен создан:", token);
 
         return res.json({ 
-            token: token, 
+            token, 
             userId: user._id.toString()
         });
     } catch (error) {
+        console.error("❌ Ошибка логина:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
