@@ -31,6 +31,7 @@
         <div id="auth">
             <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
+            <button class="btn btn-primary" onclick="register()">Register</button>
             <button class="btn btn-primary" onclick="login()">Login</button>
         </div>
 
@@ -58,6 +59,30 @@
 
     <script>
         let laptopsData = []; // Store fetched laptops
+
+        let token = "";
+
+        async function register() {
+        const username = document.getElementById("username").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!username || !password) {
+            alert("Username and password cannot be empty.");
+            return;
+        }
+
+        const res = await fetch("/users/register", {
+            method: "POST",
+           headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+    });
+
+    const data = await res.json();
+    alert(data.message || data.error);
+}
+
+
+
 
         async function login() {
     const username = document.getElementById("username").value.trim();
