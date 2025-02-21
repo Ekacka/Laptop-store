@@ -1,20 +1,16 @@
 function addToCart(model, price) {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
     let item = { name: model, price: price };
     cart.push(item);
+
     localStorage.setItem("cart", JSON.stringify(cart));
     alert(`${model} added to cart!`);
 }
 
 // Ensure DOM is loaded before modifying UI
 document.addEventListener("DOMContentLoaded", function () {
-    const username = localStorage.getItem("username");
-    if (!username) {
-        alert("Please log in first.");
-        return;
-    }
-
-    let cart = JSON.parse(localStorage.getItem(`cart_${username}`)) || [];
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
     function updateCartUI() {
         const cartContainer = document.getElementById("cart-items");
@@ -37,44 +33,49 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         totalPriceEl.textContent = `Total: $${total}`;
-        orderBtn.style.display = cart.length > 0 ? "block" : "none";
 
-        localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
+        if (cart.length > 0) {
+            orderBtn.style.display = "block"; // Show "Place Order" button
+        } else {
+            orderBtn.style.display = "none";
+        }
+
+        localStorage.setItem("cart", JSON.stringify(cart));
     }
 
     document.getElementById("cart-items")?.addEventListener("click", function (e) {
         if (e.target.classList.contains("remove")) {
             const index = e.target.getAttribute("data-index");
             cart.splice(index, 1);
-            localStorage.setItem(`cart_${username}`, JSON.stringify(cart));
+            localStorage.setItem("cart", JSON.stringify(cart));
             updateCartUI();
         }
     });
 
     document.getElementById("place-order")?.addEventListener("click", async function () {
-        if (!username) {
+        let userId = localStorage.getItem("userId"); 
+        if (!userId) {
             alert("Please log in first.");
             return;
         }
 
         let orderData = {
-            username: username, // ✅ Use username instead of userId
+            userId: userId,
             laptops: cart,
             total: cart.reduce((sum, item) => sum + item.price, 0),
         };
 
         try {
-            const res = await fetch("/api/orders", {
+            const res = await fetch("/orders", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",
                 body: JSON.stringify(orderData),
             });
 
             const data = await res.json();
             if (res.ok) {
                 alert("Order placed successfully!");
-                localStorage.removeItem(`cart_${username}`);
+                localStorage.removeItem("cart");
                 location.reload();
             } else {
                 alert("Order failed: " + data.error);
@@ -86,4 +87,3 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateCartUI();
 });
-

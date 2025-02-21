@@ -25,59 +25,51 @@
         </div>
 
         <div id="laptop-section" style="display: none;">
+            <button onclick="window.location.href='cart.html'" class="btn btn-secondary">
+                🛒 Your Cart
+            </button>
+            
             <h2>Available Laptops</h2>
             <div id="laptops"></div>
         </div>
     </div>
 
     <script>
-        let token = "";
-
-        async function register() {
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
-
-        if (!username || !password) {
-            alert("Username and password cannot be empty.");
-            return;
-        }
-
-        const res = await fetch("/users/register", {
-            method: "POST",
-           headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-    });
-
-    const data = await res.json();
-    alert(data.message || data.error);
-}
-
-
         async function login() {
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
-
-            const res = await fetch("/users/login", {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+    
+            if (!username || !password) {
+                alert("Username and password cannot be empty.");
+                return;
+            }
+    
+            const res = await fetch("http://localhost:3030/users/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password }),
+                credentials: "include", // Ensures cookies (token) are sent
+                body: JSON.stringify({ username, password })
             });
-
+    
             const data = await res.json();
-            if (data.token) {
-                token = data.token;
+    
+            if (res.ok) {
+                localStorage.setItem("token", data.token);  // ✅ Store token
+                localStorage.setItem("userId", data.userId);  // ✅ Store userId for cart use
+                
                 document.getElementById("auth").style.display = "none";
                 document.getElementById("laptop-section").style.display = "block";
+    
                 loadLaptops();
             } else {
-                alert(data.error);
+                alert("Login failed: " + data.error);
             }
         }
-
+    
         async function loadLaptops() {
-            const res = await fetch("/api/laptops");
+            const res = await fetch("http://localhost:3030/api/laptops");
             const laptops = await res.json();
-
+    
             const laptopsDiv = document.getElementById("laptops");
             laptopsDiv.innerHTML = "";
             laptops.forEach(laptop => {
@@ -87,15 +79,37 @@
                         <p><b>Price:</b> $${laptop.price}</p>
                         <p><b>Processor:</b> ${laptop.processor}</p>
                         <p><b>RAM:</b> ${laptop.ram}</p>
-                        <button class="btn btn-primary" onclick="addToCart('${laptop._id}')">Add to Cart</button>
+                        <button class="btn btn-primary" onclick="addToCart('${laptop.model}', ${laptop.price})">Add to Cart</button>
                     </div>
                 `;
             });
         }
-
-        function addToCart(laptopId) {
-            alert("Laptop " + laptopId + " added to cart!");
+    
+        function addToCart(model, price) {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            let item = { name: model, price: price };
+    
+            cart.push(item);
+            localStorage.setItem("cart", JSON.stringify(cart));
+    
+            alert(`${model} added to cart!`);
         }
+    
+        // Check if the user is already logged in
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("token");
+            if (token) {
+                document.getElementById("auth").style.display = "none";
+                document.getElementById("laptop-section").style.display = "block";
+                loadLaptops();
+            }
+        });
     </script>
+    
+    
+    
+    
+<script src="cart.js"></script>
 </body>
 </html>
+

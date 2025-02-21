@@ -6,90 +6,112 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
+// Models
 const User = require("./models/User");
 const Laptop = require("./models/Laptop");
 
+// Routes
+const orderRoutes = require("./routes/orderRoutes");
+
 const app = express();
+
+// Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true
+}));
 app.use(cookieParser());
 
-mongoose.connect(process.env.MONGO_URI, {
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, {})
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch(err => console.error("❌ MongoDB Connection Error:", err));
 
-}).then(() => console.log("MongoDB Connected"))
-  .catch(err => console.log(err));
+// Serve static files
+app.use(express.static(__dirname));
 
-app.use(express.static(path.join(__dirname, "public")));
+// Use Order Routes
+app.use("/api", orderRoutes);
 
+// Serve the main HTML file
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
-app.post("/users/register", async (req, res) => {
-    console.log("📩 Incoming request:", req.body);
-    if (!req.body.username || !req.body.password) {
-        console.log("❌ Missing fields:", req.body);
-        return res.status(400).json({ error: "Username and password are required" });
-    }
-
-    const { username, password } = req.body;
-
+// User Registration
+app.post("/users/register", async (req, res, next) => {
     try {
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ error: "Username and password are required" });
+        }
+
         const existingUser = await User.findOne({ username });
         if (existingUser) {
-            console.log("⚠️ User already exists:", username);
             return res.status(400).json({ error: "Username already exists" });
         }
 
-        // ❌ Don't hash manually! Let Mongoose middleware handle it
-        const newUser = new User({ username, password });
+        const hashedPassword = await bcrypt.hash(password, 10);
 
+        const newUser = new User({ username, password: hashedPassword });
         await newUser.save();
-        console.log("✅ User registered successfully!");
-        res.json({ message: "User registered successfully!" });
-    } catch (err) {
-        console.error("❌ Registration error:", err);
-        res.status(400).json({ error: "Registration failed", details: err.message });
+
+        return res.json({ message: "User registered successfully!" });
+    } catch (error) {
+        next(error);
     }
 });
 
-
-
-
+// User Login
 app.post("/users/login", async (req, res) => {
-    const { username, password } = req.body;
-    
-    console.log("📩 Login attempt:", req.body); // Debug: Check received input
+    try {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username });
 
-    const user = await User.findOne({ username });
-    
-    console.log("🔍 User found:", user); // Debug: Check if user is found
+        if (!user) {
+            return res.status(401).json({ error: "User not found" });
+        }
 
-    if (!user) {
-        return res.status(401).json({ error: "Invalid credentials (User not found)" });
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: "Incorrect password" });
+        }
+
+        const token = jwt.sign({ userId: user._id.toString() }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+        res.cookie("token", token, { httpOnly: true, secure: false });
+
+        return res.json({ 
+            token: token, 
+            userId: user._id.toString()  // ✅ Send userId
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    
-    console.log("🔑 Password match:", isMatch); // Debug: Check password comparison
-
-    if (!isMatch) {
-        return res.status(401).json({ error: "Invalid credentials (Password incorrect)" });
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
-    
-    console.log("✅ Login successful! Token generated.");
-    
-    res.json({ token });
 });
 
 
-// Fetch all laptops
-app.get("/api/laptops", async (req, res) => {
-    const laptops = await Laptop.find();
-    res.json(laptops);
+
+
+app.get("/api/laptops", async (req, res, next) => {
+    try {
+        const laptops = await Laptop.find();
+        return res.json(laptops);
+    } catch (error) {
+        next(error);
+    }
 });
 
+app.use((err, req, res, next) => {
+    console.error("🔥 Server Error:", err);
+    if (!res.headersSent) {
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+// Start Server
 const PORT = process.env.PORT || 3030;
-app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
