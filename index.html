@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Store</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { width: 60%; margin: auto; }
+        .laptop-card { border: 1px solid #ccc; padding: 10px; margin: 10px; display: inline-block; width: 30%; }
+        .btn { padding: 5px 10px; margin-top: 10px; cursor: pointer; }
+        .btn-primary { background-color: blue; color: white; border: none; }
+        .btn-secondary { background-color: gray; color: white; border: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Laptop Store</h1>
+
+        <div id="auth">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn btn-primary" onclick="register()">Register</button>
+            <button class="btn btn-secondary" onclick="login()">Login</button>
+        </div>
+
+        <div id="laptop-section" style="display: none;">
+            <h2>Available Laptops</h2>
+            <div id="laptops"></div>
+        </div>
+    </div>
+
+    <script>
+        let token = "";
+
+        async function register() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const res = await fetch("/users/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await res.json();
+            alert(data.message || data.error);
+        }
+
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+
+            const res = await fetch("/users/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password }),
+            });
+
+            const data = await res.json();
+            if (data.token) {
+                token = data.token;
+                document.getElementById("auth").style.display = "none";
+                document.getElementById("laptop-section").style.display = "block";
+                loadLaptops();
+            } else {
+                alert(data.error);
+            }
+        }
+
+        async function loadLaptops() {
+            const res = await fetch("/api/laptops");
+            const laptops = await res.json();
+
+            const laptopsDiv = document.getElementById("laptops");
+            laptopsDiv.innerHTML = "";
+            laptops.forEach(laptop => {
+                laptopsDiv.innerHTML += `
+                    <div class="laptop-card">
+                        <h3>${laptop.brand} ${laptop.model}</h3>
+                        <p><b>Price:</b> $${laptop.price}</p>
+                        <p><b>Processor:</b> ${laptop.processor}</p>
+                        <p><b>RAM:</b> ${laptop.ram}</p>
+                        <button class="btn btn-primary" onclick="addToCart('${laptop._id}')">Add to Cart</button>
+                    </div>
+                `;
+            });
+        }
+
+        function addToCart(laptopId) {
+            alert("Laptop " + laptopId + " added to cart!");
+        }
+    </script>
+</body>
+</html>
