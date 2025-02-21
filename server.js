@@ -13,6 +13,7 @@ const Laptop = require("./models/Laptop");
 
 // Routes
 const orderRoutes = require("./routes/orderRoutes");
+const adminRoutes = require("./admin");  // 🔹 Import Admin Routes
 
 const app = express();
 
@@ -32,12 +33,18 @@ mongoose.connect(process.env.MONGO_URI, {})
 // Serve static files
 app.use(express.static(__dirname));
 
-// Use Order Routes
+// Use Routes
 app.use("/api", orderRoutes);
+app.use("/admin", adminRoutes);  // 🔹 Enable Admin Routes
 
 // Serve the main HTML file
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
+});
+
+// Admin Dashboard UI
+app.get("/admin", (req, res) => {
+    res.sendFile(path.join(__dirname, "admin.html"));  // 🔹 Serve Admin Panel UI
 });
 
 // User Registration
@@ -55,7 +62,6 @@ app.post("/users/register", async (req, res, next) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-
         const newUser = new User({ username, password: hashedPassword });
         await newUser.save();
 
@@ -86,16 +92,14 @@ app.post("/users/login", async (req, res) => {
 
         return res.json({ 
             token: token, 
-            userId: user._id.toString()  // ✅ Send userId
+            userId: user._id.toString()
         });
     } catch (error) {
         res.status(500).json({ error: "Server error" });
     }
 });
 
-
-
-
+// Get Laptops
 app.get("/api/laptops", async (req, res, next) => {
     try {
         const laptops = await Laptop.find();
@@ -105,6 +109,7 @@ app.get("/api/laptops", async (req, res, next) => {
     }
 });
 
+// Global Error Handler
 app.use((err, req, res, next) => {
     console.error("🔥 Server Error:", err);
     if (!res.headersSent) {
@@ -115,3 +120,4 @@ app.use((err, req, res, next) => {
 // Start Server
 const PORT = process.env.PORT || 3030;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+    
