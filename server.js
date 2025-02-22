@@ -13,9 +13,16 @@ const Laptop = require("./models/Laptop");
 
 // Routes
 const orderRoutes = require("./routes/orderRoutes");
-const adminRoutes = require("./admin");  // 🔹 Import Admin Routes
+const adminRoutes = require("./admin");  
 
 const app = express();
+const { graphqlHTTP } = require('express-graphql');
+const schema = require('./graphql/schema');
+
+app.use('/graphql', graphqlHTTP({
+  schema: schema,
+  graphiql: true
+}));
 
 // Middleware
 app.use(express.json());
@@ -27,15 +34,15 @@ app.use(cookieParser());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {})
-    .then(() => console.log("✅ MongoDB Connected"))
-    .catch(err => console.error("❌ MongoDB Connection Error:", err));
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.error(" MongoDB Connection Error:", err));
 
 // Serve static files
 app.use(express.static(__dirname));
 
 // Use Routes
 app.use("/api", orderRoutes);
-app.use("/admin", adminRoutes);  // 🔹 Enable Admin Routes
+app.use("/admin", adminRoutes);  // Enable Admin Routes
 
 // Serve the main HTML file
 app.get("/", (req, res) => {
@@ -44,7 +51,7 @@ app.get("/", (req, res) => {
 
 // Admin Dashboard UI
 app.get("/admin", (req, res) => {
-    res.sendFile(path.join(__dirname, "admin.html"));  // 🔹 Serve Admin Panel UI
+    res.sendFile(path.join(__dirname, "admin.html"));  // Serve Admin Panel UI
 });
 
 // User Registration
@@ -62,16 +69,14 @@ app.post("/users/register", async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log("🔍 Обычный пароль:", password);
-        console.log("🔍 Хешированный пароль:", hashedPassword);
 
         const newUser = new User({ username, password: hashedPassword });
-        console.log("✅ Сохранение в БД:", newUser);
+        console.log("Сохранение в БД:", newUser);
         await newUser.save();
 
         return res.json({ message: "User registered successfully!" });
     } catch (error) {
-        console.error("❌ Ошибка регистрации:", error);
+        console.error("Ошибка регистрации:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
@@ -112,14 +117,12 @@ app.post("/users/login", async (req, res) => {
             userId: user._id.toString()
         });
     } catch (error) {
-        console.error("❌ Ошибка логина:", error);
+        console.error("Ошибка логина:", error);
         res.status(500).json({ error: "Server error" });
     }
 });
 
 // Get Laptops
-// Get Laptops with Search Capability
-// Get Laptops with Enhanced Search
 app.get("/api/laptops", async (req, res, next) => {
     try {
         const { search } = req.query;

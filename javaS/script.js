@@ -114,6 +114,17 @@ function updateCartCount() {
     document.getElementById("cart-count").textContent = cart.length;
 }
 
+// Update on page load
+updateCartCount();
+
+// Override localStorage.setItem to detect changes
+const originalSetItem = localStorage.setItem;
+localStorage.setItem = function (key, value) {
+    originalSetItem.apply(this, arguments);
+    if (key === "cart") updateCartCount();
+};
+
+
 function applyFilters() {
     let filteredLaptops = laptopsData;
 

@@ -3,7 +3,6 @@ function addToCart(model, price) {
     cart.push({ name: model, price: price });
 
     localStorage.setItem("cart", JSON.stringify(cart));
-    alert(`${model} added to cart!`);
 
     updateCartUI();
 }
