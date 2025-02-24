@@ -1,8 +1,8 @@
 const express = require("express");
 const session = require("express-session");
 const path = require("path");
-const Laptop = require("./models/Laptop");
-const Order = require("./models/order");
+const Laptop = require("../models/Laptop");
+const Order = require("../models/Order");
 
 const router = express.Router();
 
