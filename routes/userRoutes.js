@@ -3,21 +3,22 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Joi = require("joi");
 const User = require("../models/User");
+const authMiddleware = require("../middleware/auth");
 
 const router = express.Router();
 
 const passwordSchema = Joi.object({
   username: Joi.string().min(3).max(30).required(),
   password: Joi.string()
-      .min(8)
-      .max(30)
-      .pattern(new RegExp("(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}"))
-      .required()
-      .messages({
-        "string.pattern.base": "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.",
-        "string.min": "Password must be at least 8 characters long.",
-        "string.max": "Password must be no more than 30 characters long."
-      })
+    .min(8)
+    .max(30)
+    .pattern(new RegExp("(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}"))
+    .required()
+    .messages({
+      "string.pattern.base": "Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.",
+      "string.min": "Password must be at least 8 characters long.",
+      "string.max": "Password must be no more than 30 characters long."
+    })
 });
 
 router.post("/register", async (req, res) => {
@@ -71,9 +72,9 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-        { userName: user.username.toString() },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
     );
 
     res.cookie("token", token, { httpOnly: true, secure: false });
@@ -90,6 +91,40 @@ router.post("/login", async (req, res) => {
 
 router.post("/logout", (req, res) => {
   res.clearCookie("token").json({ message: "Logged out successfully" });
+});
+
+router.get("/profile", authMiddleware, async (req, res) => {
+  try {
+      const user = await User.findById(req.userId).select("-password");
+      if (!user) {
+          return res.status(404).json({ error: "User not found" });
+      }
+      res.json(user);
+  } catch (error) {
+      console.error("🔥 Profile Error:", error);
+      res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Update User Profile
+router.put("/profile", authMiddleware, async (req, res) => {
+  try {
+      const { username } = req.body;
+      const user = await User.findByIdAndUpdate(
+          req.userId,
+          { username },
+          { new: true, runValidators: true }
+      ).select("-password");
+
+      if (!user) {
+          return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({ message: "Profile updated successfully", user });
+  } catch (error) {
+      console.error("🔥 Profile Update Error:", error);
+      res.status(500).json({ error: "Server error" });
+  }
 });
 
 module.exports = router;
