@@ -1,11 +1,4 @@
-function addToCart(model, price) {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push({ name: model, price: price });
 
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    updateCartUI();
-}
 
 // Ensure DOM is loaded before modifying UI
 document.addEventListener("DOMContentLoaded", function () {
@@ -15,6 +8,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getCart() {
         return JSON.parse(localStorage.getItem("cart")) || [];
+    }
+
+    function addToCart(model, price) {
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        cart.push({ name: model, price: price });
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+
+        updateCartUI();
     }
 
     function updateCartUI() {

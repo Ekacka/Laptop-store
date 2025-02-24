@@ -1,5 +1,5 @@
 async function checkAuth() {
-    let response = await fetch("/admin/check-auth");
+    let response = await fetch("/api/admin/check-auth");
     if (response.status !== 200) {
         document.getElementById("login-container").style.display = "block";
         document.getElementById("admin-container").style.display = "none";
@@ -15,7 +15,7 @@ async function login() {
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
 
-    let response = await fetch("/admin/login", {
+    let response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password })
@@ -29,12 +29,12 @@ async function login() {
 }
 
 async function logout() {
-    await fetch("/admin/logout");
+    await fetch("/api/admin/logout");
     checkAuth();
 }
 
 async function loadLaptops() {
-    let response = await fetch("/admin/laptops");
+    let response = await fetch("/api/admin/laptops");
     let laptops = await response.json();
     let table = document.getElementById("laptops");
     table.innerHTML = "<tr><th>Brand</th><th>Model</th><th>Price</th><th>Processor</th><th>RAM</th><th>Storage</th><th>Graphics</th><th>Availability</th><th>Actions</th></tr>";
@@ -68,7 +68,7 @@ async function addLaptop() {
         graphics: document.getElementById("graphics").value,
         availability: document.getElementById("availability").checked
     };
-    await fetch("/admin/add", {
+    await fetch("/api/admin/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(laptop)
@@ -77,7 +77,7 @@ async function addLaptop() {
 }
 
 async function deleteLaptop(id) {
-    await fetch(`/admin/delete/${id}`, { method: "POST" });
+    await fetch(`/api/admin/delete/${id}`, { method: "POST" });
     loadLaptops();
 }
 
@@ -93,7 +93,7 @@ async function updateLaptop(id) {
         availability: confirm("Is the laptop available?")
     };
     if (updatedLaptop.brand && updatedLaptop.model) {
-        await fetch(`/admin/update/${id}`, {
+        await fetch(`/api/admin/update/${id}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(updatedLaptop)
@@ -104,7 +104,7 @@ async function updateLaptop(id) {
 
 async function fetchBestSelling() {
     try {
-        const response = await fetch("/admin/best-selling");
+        const response = await fetch("/api/admin/best-selling");
         const data = await response.json();
 
         const labels = data.map(item => item.laptop);

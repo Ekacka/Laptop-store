@@ -10,7 +10,7 @@ async function register() {
         return;
     }
 
-    const res = await fetch("http://localhost:3030/users/register", {
+    const res = await fetch("http://localhost:3030/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -35,7 +35,7 @@ async function login() {
         return;
     }
 
-    const res = await fetch("http://localhost:3030/users/login", {
+    const res = await fetch("http://localhost:3030/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -137,7 +137,7 @@ function applyFilters() {
         filteredLaptops = filteredLaptops.filter(laptop => laptop.brand === brand);
     }
     if (ram) {
-        filteredLaptops = filteredLaptops.filter(laptop => laptop.ram == ram);
+        filteredLaptops = filteredLaptops.filter(laptop => laptop.ram === ram);
     }
     filteredLaptops = filteredLaptops.filter(laptop => laptop.price >= minPrice && laptop.price <= maxPrice);
 
