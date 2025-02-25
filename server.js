@@ -18,14 +18,7 @@ const userRoutes = require("./routes/userRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 
 const app = express();
-const { graphqlHTTP } = require('express-graphql');
-const schema = require('./graphql/schema');
 const {response} = require("express");
-
-app.use('/graphql', graphqlHTTP({
-  schema: schema,
-  graphiql: true
-}));
 
 // Middleware
 app.use(express.json());
