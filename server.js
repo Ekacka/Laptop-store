@@ -34,7 +34,7 @@ mongoose.connect(process.env.MONGO_URI, {})
     .catch(err => console.error(" MongoDB Connection Error:", err));
 
 // Serve static files
-app.use(express.static(__dirname));
+app.use(express.static("public"));
 
 // Use Routes
 app.use("/api", orderRoutes);
@@ -43,16 +43,16 @@ app.use("/api/users", userRoutes);
 
 // Serve the main HTML file
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/frontend/public/index.html"));
+    res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
 // Admin Dashboard UI
 app.get("/admin", (req, res) => {
-    res.sendFile(path.join(__dirname, "/frontend/public/admin.html"));  // Serve Admin Panel UI
+    res.sendFile(path.join(__dirname, "/public/admin.html"));  // Serve Admin Panel UI
 });
 
 app.get("/cart", (req, res) => {
-    res.sendFile(path.join(__dirname, "/frontend/public/cart.html"));
+    res.sendFile(path.join(__dirname, "/public/cart.html"));
 })
 
 // Get Laptops
