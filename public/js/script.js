@@ -10,7 +10,7 @@ async function register() {
         return;
     }
 
-    const res = await fetch("http://localhost:3030/api/users/register", {
+    const res = await fetch("/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -35,7 +35,7 @@ async function login() {
         return;
     }
 
-    const res = await fetch("http://localhost:3030/api/users/login", {
+    const res = await fetch("/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
